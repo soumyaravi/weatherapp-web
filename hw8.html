@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Forecast Search</title>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+      <link href="style.css" rel="stylesheet">
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+      <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>     
+      <script src="http://ajax.microsoft.com/ajax/jQuery.Validate/1.6/jQuery.validate.min.js"></script>
+      <script src="http://ajax.microsoft.com/ajax/jquery.validate/1.7/additional-methods.js"></script>
+      <script src="http://openlayers.org/api/OpenLayers.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.4.1/moment-timezone.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.4.0/moment-timezone-with-data-2010-2020.js"></script>
+      <script src="weather.js"></script>
+   </head>
+   <body>
+      <h2>Forecast Search</h2>
+      <div class="container">
+         <!--
+            -->
+         <div class="jumbotron">
+            <div class="row">
+               <!--
+                  -->
+               <form action="http://webtech12-env.elasticbeanstalk.com" method="get" name="search" class="form-group" id="search">
+                  <div class="col-md-2 col-sm-12 col-xs-12 " ><label class="control-label" for="street">Street address:<span>*</span></label><br><input type="text" class="form-control" name="street" placeholder="Enter street address"></div>
+                  <div class="col-md-2 col-sm-12 col-xs-12 "><label class="control-label" for="city">City:<span>*</span></label><br><input type="text" class="form-control" name="city" placeholder="Enter the city name"></div>
+                  <div class="col-md-2 col-sm-12 col-xs-12 ">
+                     <label for="states">State:<span>*</span></label><br>
+                     <select name="states" class="form-control">
+                        <option value="default" selected>Select your state...</option>
+                        <option value="AL">Alabama</option>
+                        <option value="AK">Alaska</option>
+                        <option value="AZ">Arizona</option>
+                        <option value="AR">Arkansas</option>
+                        <option value="CA">California</option>
+                        <option value="CO">Colorado</option>
+                        <option value="CT">Connecticut</option>
+                        <option value="DE">Delaware</option>
+                        <option value="DC">District Of Columbia</option>
+                        <option value="FL">Florida</option>
+                        <option value="GA">Georgia</option>
+                        <option value="HI">Hawaii</option>
+                        <option value="ID">Idaho</option>
+                        <option value="IL">Illinois</option>
+                        <option value="IN">Indiana</option>
+                        <option value="IA">Iowa</option>
+                        <option value="KS">Kansas</option>
+                        <option value="KY">Kentucky</option>
+                        <option value="LA">Louisiana</option>
+                        <option value="ME">Maine</option>
+                        <option value="md">Maryland</option>
+                        <option value="MA">Massachusetts</option>
+                        <option value="MI">Michigan</option>
+                        <option value="MN">Minnesota</option>
+                        <option value="MS">Mississippi</option>
+                        <option value="MO">Missouri</option>
+                        <option value="MT">Montana</option>
+                        <option value="NE">Nebraska</option>
+                        <option value="NV">Nevada</option>
+                        <option value="NH">New Hampshire</option>
+                        <option value="NJ">New Jersey</option>
+                        <option value="NM">New Mexico</option>
+                        <option value="NY">New York</option>
+                        <option value="NC">North Carolina</option>
+                        <option value="ND">North Dakota</option>
+                        <option value="OH">Ohio</option>
+                        <option value="OK">Oklahoma</option>
+                        <option value="OR">Oregon</option>
+                        <option value="PA">Pennsylvania</option>
+                        <option value="RI">Rhode Island</option>
+                        <option value="SC">South Carolina</option>
+                        <option value="SD">South Dakota</option>
+                        <option value="TN">Tennessee</option>
+                        <option value="TX">Texas</option>
+                        <option value="UT">Utah</option>
+                        <option value="VT">Vermont</option>
+                        <option value="VA">Virginia</option>
+                        <option value="WA">Washington</option>
+                        <option value="WV">West Virginia</option>
+                        <option value="WI">Wisconsin</option>
+                        <option value="WY">Wyoming</option>
+                     </select>
+                  </div>
+                  <div class="col-md-3 col-sm-12 col-xs-12 ">
+                     <label for="degree">Degree:<span>*</span></label>
+                     <br><label class="radio-inline"><input type="radio"name="degree" value="Fahrenheit" checked>Fahrenheit</label> &nbsp; <label class="radio-inline"><input type="radio" name="degree" value="Celsius">Celsius</label>
+                  </div>
+                  <div class="col-md-3 col-xs-12 " id="btn"><br>
+                     <button type="submit" class="btn btn-primary"> <span style="color:white;" class="glyphicon glyphicon-search"></span> Search</button>&nbsp; <button type="reset" class="btn btn-default" id="reset" onclick="clearForm()"><span style="color:black;" class="glyphicon glyphicon-refresh"></span>  Clear</button>
+                  </div>
+               </form>
+            </div>
+            <div class="col-xs-12 col-sm-12 col-md-8"></div>
+            <div class="col-md-4" style="text-align:right;color:white;">Powered by:<a href="http://forecast.io"><img id="poweredby" src="http://cs-server.usc.edu:45678/hw/hw8/images/forecast_logo.png"></a></div>
+         </div>
+         <hr>
+      </div>
+      <div class="container" id="data-info">
+      <!-- Nav tabs -->
+      <ul class="nav nav-pills tabcolor">
+         <li class="active"><a data-toggle="pill" href="#now" >Right Now</a></li>
+         <li><a data-toggle="pill" href="#hours">Next 24 Hours</a></li>
+         <li><a data-toggle="pill" href="#days">Next 7 Days</a></li>
+      </ul>
+      <!-- Tab panes -->
+      <div class="tab-content">
+      <!--Right Now-->
+      <div class="tab-pane active" id="now">
+         <div class="row no-gutter">
+            <div class="col-xs-12 col-sm-12 col-md-6" id="left">
+               <div class="col-md-6 col-xs-12" style="background-color:#F57D7D;" id="cimg">
+                  <p id="currimg" style="text-align:center;">
+                  </p>
+               </div>
+               <div class="col-md-6 col-xs-12" style="text-align: center; color:white; background-color:#F57D7D;">
+                  <b><span class="summary" style="color:white"></span> in <span class="city1" style="color:white;"></span>, <span id="state1" style="color:white;"></span></b>
+                  <h1 style="color:white;"><b><span id="tempnow" style="color:white;font-size:36px;"></span></b><sup><span style="color:white;font-size:16px;" class="deg"></span></sup></h1>
+                  <span style="position:relative;width:27px;height:27px;">
+                     <div style="position:absolute;left:100px;top:25px;width:27px;height:27px;z-index:111;">
+                        <img src="http://cs-server.usc.edu:52629/fb_icon-Copy.png" class="img-responsive" style="cursor:pointer;display:inline-block;" />
+                     </div>
+                     <div style="position:absolute;left:100px;top:25px;width:27px;height:27px;overflow:hidden;z-index:333;opacity:0;filter:alpha(opacity=0);">
+                        <fb:login-button width="27" height="27" scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button>
+                     </div>
+                  </span>
+                  </p><br>
+                  <p style="color:black;"><span style="color:#3F1EDF;" id="nowlow"></span> | <span style="color:#2D8017;" id="nowhigh"></span>
+               </div>
+               <table class="table table-striped tablecolor">
+                  <tbody style="background-color:#F3DEDE" id="tabl1">
+                     <tr>
+                        <td>Precipitation</td>
+                        <td id="pnow"></td>
+                     </tr>
+                     <tr>
+                        <td>Chance of Rain</td>
+                        <td id="chance"></td>
+                     </tr>
+                     <tr>
+                        <td>Dew Point</td>
+                        <td id="dew"></td>
+                     </tr>
+                     <tr>
+                        <td>Wind Speed</td>
+                        <td id="windnow"></td>
+                     </tr>
+                     <tr>
+                        <td>Humidity</td>
+                        <td id="humnow"></td>
+                     </tr>
+                     <tr>
+                        <td>Visibility</td>
+                        <td id="visnow"></td>
+                     </tr>
+                     <tr>
+                        <td>Sunrise</td>
+                        <td id="risenow"></td>
+                     </tr>
+                     <tr>
+                        <td>Sunset</td>
+                        <td id="setnow"></td>
+                     </tr>
+                  </tbody>
+                  <!--
+                     -->
+               </table>
+            </div>
+            <!--
+               -->
+            <div class="col-xs-12 col-sm-12 col-md-6" style="display:inline-block;" id="map">
+               <div id="right" class="well"></div>
+            </div>
+         </div>
+      </div>
+      <!-- Next 24 hours-->
+      <div class="tab-pane" id="hours">
+         <table class="table">
+            <thead style="background-color:#2C70AB; color: white;">
+               <tr>
+                  <th style="text-align:center;">Time</th>
+                  <th style="text-align:center;">Summary</th>
+                  <th style="text-align:center;">Cloud Cover</th>
+                  <th style="text-align:center;">Temp (&deg; <span class="deg" style="color:white;"></span>)</th>
+                  <th style="text-align:center;">View Details</th>
+               </tr>
+            </thead>
+            <tbody style="background-color: white; text-align: center; vertical-align: middle;" class="addrow">
+               <tr id="tab2-1">
+                  <td id="time1"></td>
+                  <td id="img2-1"></td>
+                  <td id="cloud2-1"></td>
+                  <td id="temp2-1"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details1" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details1">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-1"></td>
+                                 <td id="hum2-1"></td>
+                                 <td id="vis2-1"></td>
+                                 <td id="pr2-1"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-2">
+                  <td id="time2"></td>
+                  <td id="img2-2"></td>
+                  <td id="cloud2-2"></td>
+                  <td id="temp2-2"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details2" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details2">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-2"></td>
+                                 <td id="hum2-2"></td>
+                                 <td id="vis2-2"></td>
+                                 <td id="pr2-2"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-3">
+                  <td id="time3"></td>
+                  <td id="img2-3"></td>
+                  <td id="cloud2-3"></td>
+                  <td id="temp2-3"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details3" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details3">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-3"></td>
+                                 <td id="hum2-3"></td>
+                                 <td id="vis2-3"></td>
+                                 <td id="pr2-3"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-4">
+                  <td id="time4"></td>
+                  <td id="img2-4"></td>
+                  <td id="cloud2-4"></td>
+                  <td id="temp2-4"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details4" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details4">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-4"></td>
+                                 <td id="hum2-4"></td>
+                                 <td id="vis2-4"></td>
+                                 <td id="pr2-4"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-5">
+                  <td id="time5"></td>
+                  <td id="img2-5"></td>
+                  <td id="cloud2-5"></td>
+                  <td id="temp2-5"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details5" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details5">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-5"></td>
+                                 <td id="hum2-5"></td>
+                                 <td id="vis2-5"></td>
+                                 <td id="pr2-5"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-6">
+                  <td id="time6"></td>
+                  <td id="img2-6"></td>
+                  <td id="cloud2-6"></td>
+                  <td id="temp2-6"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details6" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details6">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-6"></td>
+                                 <td id="hum2-6"></td>
+                                 <td id="vis2-6"></td>
+                                 <td id="pr2-6"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-7">
+                  <td id="time7"></td>
+                  <td id="img2-7"></td>
+                  <td id="cloud2-7"></td>
+                  <td id="temp2-7"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details7" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details7">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-7"></td>
+                                 <td id="hum2-7"></td>
+                                 <td id="vis2-7"></td>
+                                 <td id="pr2-7"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-8">
+                  <td id="time8"></td>
+                  <td id="img2-8"></td>
+                  <td id="cloud2-8"></td>
+                  <td id="temp2-8"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details8" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details8">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-8"></td>
+                                 <td id="hum2-8"></td>
+                                 <td id="vis2-8"></td>
+                                 <td id="pr2-8"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-9">
+                  <td id="time9"></td>
+                  <td id="img2-9"></td>
+                  <td id="cloud2-9"></td>
+                  <td id="temp2-9"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details9" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details9">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-9"></td>
+                                 <td id="hum2-9"></td>
+                                 <td id="vis2-9"></td>
+                                 <td id="pr2-9"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-10">
+                  <td id="time10"></td>
+                  <td id="img2-10"></td>
+                  <td id="cloud2-10"></td>
+                  <td id="temp2-10"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details10" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details10">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-10"></td>
+                                 <td id="hum2-10"></td>
+                                 <td id="vis2-10"></td>
+                                 <td id="pr2-10"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-11">
+                  <td id="time11"></td>
+                  <td id="img2-11"></td>
+                  <td id="cloud2-11"></td>
+                  <td id="temp2-11"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details11" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details11">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-11"></td>
+                                 <td id="hum2-11"></td>
+                                 <td id="vis2-11"></td>
+                                 <td id="pr2-11"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-12">
+                  <td id="time12"></td>
+                  <td id="img2-12"></td>
+                  <td id="cloud2-12"></td>
+                  <td id="temp2-12"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details12" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details12">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-12"></td>
+                                 <td id="hum2-12"></td>
+                                 <td id="vis2-12"></td>
+                                 <td id="pr2-12"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-13">
+                  <td id="time13"></td>
+                  <td id="img2-13"></td>
+                  <td id="cloud2-13"></td>
+                  <td id="temp2-13"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details13" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details13">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-13"></td>
+                                 <td id="hum2-13"></td>
+                                 <td id="vis2-13"></td>
+                                 <td id="pr2-13"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-14">
+                  <td id="time14"></td>
+                  <td id="img2-14"></td>
+                  <td id="cloud2-14"></td>
+                  <td id="temp2-14"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details14" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details14">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-14"></td>
+                                 <td id="hum2-14"></td>
+                                 <td id="vis2-14"></td>
+                                 <td id="pr2-14"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-15">
+                  <td id="time15"></td>
+                  <td id="img2-15"></td>
+                  <td id="cloud2-15"></td>
+                  <td id="temp2-15"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details15" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details15">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-15"></td>
+                                 <td id="hum2-15"></td>
+                                 <td id="vis2-15"></td>
+                                 <td id="pr2-15"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-16">
+                  <td id="time16"></td>
+                  <td id="img2-16"></td>
+                  <td id="cloud2-16"></td>
+                  <td id="temp2-16"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details16" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details16">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-16"></td>
+                                 <td id="hum2-16"></td>
+                                 <td id="vis2-16"></td>
+                                 <td id="pr2-16"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-17">
+                  <td id="time17"></td>
+                  <td id="img2-17"></td>
+                  <td id="cloud2-17"></td>
+                  <td id="temp2-17"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details17" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details17">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-17"></td>
+                                 <td id="hum2-17"></td>
+                                 <td id="vis2-17"></td>
+                                 <td id="pr2-17"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-18">
+                  <td id="time18"></td>
+                  <td id="img2-18"></td>
+                  <td id="cloud2-18"></td>
+                  <td id="temp2-18"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details18" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details18">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-18"></td>
+                                 <td id="hum2-18"></td>
+                                 <td id="vis2-18"></td>
+                                 <td id="pr2-18"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-19">
+                  <td id="time19"></td>
+                  <td id="img2-19"></td>
+                  <td id="cloud2-19"></td>
+                  <td id="temp2-19"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details19" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details19">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-19"></td>
+                                 <td id="hum2-19"></td>
+                                 <td id="vis2-19"></td>
+                                 <td id="pr2-19"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-20">
+                  <td id="time20"></td>
+                  <td id="img2-20"></td>
+                  <td id="cloud2-20"></td>
+                  <td id="temp2-20"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details20" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details20">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-20"></td>
+                                 <td id="hum2-20"></td>
+                                 <td id="vis2-20"></td>
+                                 <td id="pr2-20"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-21">
+                  <td id="time21"></td>
+                  <td id="img2-21"></td>
+                  <td id="cloud2-21"></td>
+                  <td id="temp2-21"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details21" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details21">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-21"></td>
+                                 <td id="hum2-21"></td>
+                                 <td id="vis2-21"></td>
+                                 <td id="pr2-21"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-22">
+                  <td id="time22"></td>
+                  <td id="img2-22"></td>
+                  <td id="cloud2-22"></td>
+                  <td id="temp2-22"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details22" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details22">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-22"></td>
+                                 <td id="hum2-22"></td>
+                                 <td id="vis2-22"></td>
+                                 <td id="pr2-22"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-23">
+                  <td id="time23"></td>
+                  <td id="img2-23"></td>
+                  <td id="cloud2-23"></td>
+                  <td id="temp2-23"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details23" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details23">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-23"></td>
+                                 <td id="hum2-23"></td>
+                                 <td id="vis2-23"></td>
+                                 <td id="pr2-23"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+               <tr id="tab2-24">
+                  <td id="time24"></td>
+                  <td id="img2-24"></td>
+                  <td id="cloud2-24"></td>
+                  <td id="temp2-24"></td>
+                  <td><span class="glyphicon glyphicon-plus" data-toggle="collapse" data-target="#details24" style="color:#2C70AB;"></td>
+               </tr>
+               <tr rowspan="3" class="collapse" id="details24">
+                  <td colspan="5" style="background-color:#F1F2F1">
+                     <div>
+                        <table class="table table-responsive">
+                           <tbody>
+                              <tr>
+                                 <td style="text-align:center;font-weight: bold;">Wind</td>
+                                 <td style="text-align:center;font-weight: bold;">Humidity</td>
+                                 <td style="text-align:center;font-weight: bold;">Visibility</td>
+                                 <td style="text-align:center;font-weight: bold;">Pressure</td>
+                              </tr>
+                              <tr style="background-color:#F1F2F1;text-align:center;">
+                                 <td id="wind2-24"></td>
+                                 <td id="hum2-24"></td>
+                                 <td id="vis2-24"></td>
+                                 <td id="pr2-24"></td>
+                              </tr>
+                           </tbody>
+                        </table>
+                     </div>
+                  </td>
+               </tr>
+            </tbody>
+         </table>
+      </div>
+      <!-- Next 7 Days -->
+      <div class="tab-pane" id="days" style="background-color: #2E3437; color:white">
+         <div class="container">
+            <div class="row">
+               <br>
+               <div class="col-sm-11 col-xs-11 col-md-1"></div>
+               <div class="col-sm-11 col-xs-11 col-md-1"></div>
+               <b>
+                  <div class="col-sm-11 col-xs-11 col-md-1 info img-rounded" id="blue" data-toggle="modal" data-target="#day-info1"><span style="color:white;" id="day1"></span><br><span style="color:white;" id="dt1"></span> <span style="color:white;" id="dtb1"></span><br><span id="img3-1"></span>
+               </b>
+               <br>Min<br>Temp<br><b><span style="color:white;font-size:26px;" id="min1"></span></b><br>Max<br>Temp<br><b><span style="color:white;font-size:26px;" id="max1"></span></b><br></div>
+               <b>
+                  <div class="col-sm-11 col-xs-11 col-md-1 info img-rounded" id="red"  data-toggle="modal" data-target="#day-info2"><span style="color:white;" id="day2"></span><br><span style="color:white;" id="dt2"></span> <span style="color:white;" id="dtb2"></span><br><span id="img3-2"></span>
+               </b>
+               <br>Min<br>Temp<br><b><span style="color:white;font-size:26px;" id="min2"></span></b><br>Max<br>Temp<br><b><span style="color:white;font-size:26px;" id="max2"></span></b><br></div>
+               <b>
+                  <div class="col-sm-11 col-xs-11 col-md-1 info img-rounded" id="orange" data-toggle="modal" data-target="#day-info3"><span style="color:white;" id="day3"></span><br><span style="color:white;" id="dt3"></span> <span style="color:white;" id="dtb3"></span><br><span id="img3-3"></span>
+               </b>
+               <br>Min<br>Temp<br><b><span style="color:white;font-size:26px;" id="min3"></span></b><br>Max<br>Temp<br><b><span style="color:white;font-size:26px;" id="max3"></span></b><br></div>
+               <b>
+                  <!-- Modal tabs -->
+                  <div class="col-sm-11 col-xs-11 col-md-1 info img-rounded" id="green"  data-toggle="modal" data-target="#day-info4"><span style="color:white;" id="day4"></span><br><span style="color:white;" id="dt4"></span> <span style="color:white;" id="dtb4"></span><br><span id="img3-4"></span>
+               </b>
+               <br>Min<br>Temp<br><b><span style="color:white;font-size:26px;" id="min4"></span></b><br>Max<br>Temp<br><b><span style="color:white;font-size:26px;" id="max4"></span></b><br></div>
+               <b>
+                  <div class="col-sm-11 col-xs-11 col-md-1 info img-rounded" id="purple"  data-toggle="modal" data-target="#day-info5"><span style="color:white;" id="day5"></span><br><span style="color:white;" id="dt5"></span> <span style="color:white;" id="dtb5"></span><br><span id="img3-5"></span>
+               </b>
+               <br>Min<br>Temp<br><b><span style="color:white;font-size:26px;" id="min5"></span></b><br>Max<br>Temp<br><b><span style="color:white;font-size:26px;" id="max5"></span></b><br></div>
+               <b>
+                  <div class="col-sm-11 col-xs-11 col-md-1 info img-rounded" id="pink"  data-toggle="modal" data-target="#day-info6"><span style="color:white;" id="day6"></span><br><span style="color:white;" id="dt6"></span> <span style="color:white;" id="dtb6"></span><br><span id="img3-6"></span>
+               </b>
+               <br>Min<br>Temp<br><b><span style="color:white;font-size:26px;" id="min6"></span></b><br>Max<br>Temp<br><b><span style="color:white;font-size:26px;" id="max6"></span></b><br></div>
+               <b>
+                  <div class="col-sm-11 col-xs-11 col-md-1 info img-rounded" id="magenta"  data-toggle="modal" data-target="#day-info7"><span style="color:white;" id="day7"></span><br><span style="color:white;" id="dt7"></span> <span style="color:white;" id="dtb7"></span><br><span id="img3-7"></span>
+               </b>
+               <br>Min<br>Temp<br><b><span style="color:white;font-size:26px;" id="min7"></span></b><br>Max<br>Temp<br><b><span style="color:white;font-size:26px;" id="max7"></span></b><br></div>
+               <div class="col-sm-11 col-xs-11 col-md-1"></div>
+               <div class="col-sm-11 col-xs-11 col-md-1"></div>
+               <div class="col-sm-11 col-xs-11 col-md-1"></div>
+            </div>
+            <br>
+         </div>
+         <div class="modal" id="day-info1">
+            <div class="modal-dialog">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal">
+                     <span>&times;</span></button>
+                     <h3 class="modal-title"><b style="color:black;">
+                        Weather in <span class="city1" style="color:black;"></span> on <span id="mday1" style="color:black;"></span> <span id="mdate1" style="color:black;"></span></b>
+                     </h3>
+                  </div>
+                  <div class="modal-body">
+                     <div id="modal-img-1" style="text-align:center;"></div>
+                     <br>
+                     <h3 style="text-align:center;font-weight:600;"><span style="color:black" id="moday-day1"></span> <span style="color:#FFA600;" id="sumday1">
+                        </span>
+                     </h3>
+                     <div class="container">
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunrise Time</h5>
+                              <h6 style="color:black;" id="rise1"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunset Time</h5>
+                              <h6 style="color:black;" id="sunset1"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Humidity</h5>
+                              <h6 style="color:black;" id="humid1"> </h6>
+                           </div>
+                        </div>
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Wind Speed</h5>
+                              <h6 style="color:black;" id="wind1"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Visibility</h5>
+                              <h6 style="color:black;" id="visib1"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Pressure</h5>
+                              <h6 style="color:black;" id="press1"> </h6>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="modal-footer">
+                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="modal" id="day-info2">
+            <div class="modal-dialog">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal">
+                     <span>&times;</span></button>
+                     <h3 class="modal-title"><b style="color:black;">
+                        Weather in <span class="city1" style="color:black;"></span> on <span id="mday2" style="color:black;"></span> <span id="mdate2" style="color:black;"></span></b>
+                     </h3>
+                  </div>
+                  <div class="modal-body">
+                     <div id="modal-img-2" style="text-align:center;"></div>
+                     <br>
+                     <h3 style="text-align:center;font-weight:600;"><span style="color:black" id="moday-day2"></span> <span style="color:#FFA600;" id="sumday2">
+                        </span>
+                     </h3>
+                     <div class="container">
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunrise Time</h5>
+                              <h6 style="color:black;" id="rise2"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunset Time</h5>
+                              <h6 style="color:black;" id="sunset2"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Humidity</h5>
+                              <h6 style="color:black;" id="humid2"> </h6>
+                           </div>
+                        </div>
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Wind Speed</h5>
+                              <h6 style="color:black;" id="wind2"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Visibility</h5>
+                              <h6 style="color:black;" id="visib2"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Pressure</h5>
+                              <h6 style="color:black;" id="press2"> </h6>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="modal-footer">
+                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="modal" id="day-info3">
+            <div class="modal-dialog">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal">
+                     <span>&times;</span></button>
+                     <h3 class="modal-title"><b style="color:black;">
+                        Weather in <span class="city1" style="color:black;"></span> on <span id="mday3" style="color:black;"></span> <span id="mdate3" style="color:black;"></span></b>
+                     </h3>
+                  </div>
+                  <div class="modal-body">
+                     <div id="modal-img-3" style="text-align:center;"></div>
+                     <br>
+                     <h3 style="text-align:center;font-weight:600;"><span style="color:black" id="moday-day3"></span> <span style="color:#FFA600;" id="sumday3">
+                        </span>
+                     </h3>
+                     <div class="container">
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunrise Time</h5>
+                              <h6 style="color:black;" id="rise3"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunset Time</h5>
+                              <h6 style="color:black;" id="sunset3"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Humidity</h5>
+                              <h6 style="color:black;" id="humid3"> </h6>
+                           </div>
+                        </div>
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Wind Speed</h5>
+                              <h6 style="color:black;" id="wind3"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Visibility</h5>
+                              <h6 style="color:black;" id="visib3"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Pressure</h5>
+                              <h6 style="color:black;" id="press3"> </h6>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="modal-footer">
+                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="modal" id="day-info4">
+            <div class="modal-dialog">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal">
+                     <span>&times;</span></button>
+                     <h3 class="modal-title"><b style="color:black;">
+                        Weather in <span class="city1" style="color:black;"></span> on <span id="mday4" style="color:black;"></span> <span id="mdate4" style="color:black;"></span></b>
+                     </h3>
+                  </div>
+                  <div class="modal-body">
+                     <div id="modal-img-4" style="text-align:center;"></div>
+                     <br>
+                     <h3 style="text-align:center;font-weight:600;"><span style="color:black" id="moday-day4"></span> <span style="color:#FFA600;" id="sumday4">
+                        </span>
+                     </h3>
+                     <div class="container">
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunrise Time</h5>
+                              <h6 style="color:black;" id="rise4"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunset Time</h5>
+                              <h6 style="color:black;" id="sunset4"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Humidity</h5>
+                              <h6 style="color:black;" id="humid4"> </h6>
+                           </div>
+                        </div>
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Wind Speed</h5>
+                              <h6 style="color:black;" id="wind4"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Visibility</h5>
+                              <h6 style="color:black;" id="visib4"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Pressure</h5>
+                              <h6 style="color:black;" id="press4"> </h6>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="modal-footer">
+                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="modal" id="day-info5">
+            <div class="modal-dialog">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal">
+                     <span>&times;</span></button>
+                     <h3 class="modal-title"><b style="color:black;">
+                        Weather in <span class="city1" style="color:black;"></span> on <span id="mday5" style="color:black;"></span> <span id="mdate5" style="color:black;"></span></b>
+                     </h3>
+                  </div>
+                  <div class="modal-body">
+                     <div id="modal-img-5" style="text-align:center;"></div>
+                     <br>
+                     <h3 style="text-align:center;font-weight:600;"><span style="color:black" id="moday-day5"></span> <span style="color:#FFA600;" id="sumday5">
+                        </span>
+                     </h3>
+                     <div class="container">
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunrise Time</h5>
+                              <h6 style="color:black;" id="rise5"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunset Time</h5>
+                              <h6 style="color:black;" id="sunset5"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Humidity</h5>
+                              <h6 style="color:black;" id="humid5"> </h6>
+                           </div>
+                        </div>
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Wind Speed</h5>
+                              <h6 style="color:black;" id="wind5"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Visibility</h5>
+                              <h6 style="color:black;" id="visib5"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Pressure</h5>
+                              <h6 style="color:black;" id="press5"> </h6>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="modal-footer">
+                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="modal" id="day-info6">
+            <div class="modal-dialog">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal">
+                     <span>&times;</span></button>
+                     <h3 class="modal-title"><b style="color:black;">
+                        Weather in <span class="city1" style="color:black;"></span> on <span id="mday6" style="color:black;"></span> <span id="mdate6" style="color:black;"></span></b>
+                     </h3>
+                  </div>
+                  <div class="modal-body">
+                     <div id="modal-img-6" style="text-align:center;"></div>
+                     <br>
+                     <h3 style="text-align:center;font-weight:600;"><span style="color:black" id="moday-day6"></span> <span style="color:#FFA600;" id="sumday6">
+                        </span>
+                     </h3>
+                     <div class="container">
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunrise Time</h5>
+                              <h6 style="color:black;" id="rise6"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunset Time</h5>
+                              <h6 style="color:black;" id="sunset6"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Humidity</h5>
+                              <h6 style="color:black;" id="humid6"> </h6>
+                           </div>
+                        </div>
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Wind Speed</h5>
+                              <h6 style="color:black;" id="wind6"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Visibility</h5>
+                              <h6 style="color:black;" id="visib6"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Pressure</h5>
+                              <h6 style="color:black;" id="press6"> </h6>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="modal-footer">
+                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+         <div class="modal" id="day-info7">
+            <div class="modal-dialog">
+               <div class="modal-content">
+                  <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal">
+                     <span>&times;</span></button>
+                     <h3 class="modal-title"><b style="color:black;">
+                        Weather in <span class="city1" style="color:black;"></span> on <span id="mday7" style="color:black;"></span> <span id="mdate7" style="color:black;"></span></b>
+                     </h3>
+                  </div>
+                  <div class="modal-body">
+                     <div id="modal-img-7" style="text-align:center;"></div>
+                     <br>
+                     <h3 style="text-align:center;font-weight:600;"><span style="color:black" id="moday-day7"></span> <span style="color:#FFA600;" id="sumday7">
+                        </span>
+                     </h3>
+                     <div class="container">
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunrise Time</h5>
+                              <h6 style="color:black;" id="rise7"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Sunset Time</h5>
+                              <h6 style="color:black;" id="sunset7"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Humidity</h5>
+                              <h6 style="color:black;" id="humid7"> </h6>
+                           </div>
+                        </div>
+                        <div class="row">
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Wind Speed</h5>
+                              <h6 style="color:black;" id="wind7"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Visibility</h5>
+                              <h6 style="color:black;" id="visib7"> </h6>
+                           </div>
+                           <div style="text-align:center;" class="col-md-2 col-xs-12 col-sm-12">
+                              <h4 style="font-weight:500; color:black;">
+                              Pressure</h5>
+                              <h6 style="color:black;" id="press7"> </h6>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="modal-footer">
+                     <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </body>
+   <noscript>
+</html>

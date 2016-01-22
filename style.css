@@ -1,0 +1,104 @@
+body{
+    background: url('http://cs-server.usc.edu:45678/hw/hw8/images/bg.jpg') center center fixed;
+    -moz-background-size: cover;
+    -webkit-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+    overflow: auto;
+}
+h2{
+    text-align: center;
+    font-weight: 400;
+}
+.jumbotron{
+    background-color: rgba(0,0,0, 0.2);
+    background-size: auto;
+}
+label{
+    color: white;
+}
+label.jqInvalid{
+    color: red;
+    font-size: 10px;
+}
+span{
+    color: red;
+}
+.search-field{
+    border-radius: 3px 3px 3px 3px;
+}
+#poweredby{
+    position: relative;
+    width: 100px;
+}
+#poweredby .col-md-4{
+    padding-right: 10px;
+}
+#btn{
+    text-align: right;
+}
+.tabcolor a:link{
+    background-color: #FFFFFF;
+}
+
+#wimg{
+    width: 130px;
+    height: 130px;
+    text-align: center;
+}
+#blue{
+    background-color: #317CB7;
+}
+#red{
+    background-color: #EF423E;
+}
+#orange{
+    background-color: #E88E47;
+}
+#green{
+    background-color: #A7A52D;
+}
+#purple{
+    background-color: #986EA9;
+}
+#pink{
+    background-color: #F67B7C;
+}
+#magenta{
+    background-color: #D04270;
+}
+.info{
+    margin: 0 auto;
+    display: block;
+    margin:10px; padding:10px;
+    text-align:center
+}
+#right{
+    height: 420px;
+    width: 550px;
+}
+.tablecolor{
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+.row.no-gutter {
+  margin-left: 0;
+  margin-right: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-right: 0;
+  padding-left: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.row.no-gutter [class*='col-']:not(:first-child),
+.row.no-gutter [class*='col-']:not(:last-child) {
+  padding-right: 0;
+  padding-left: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+.well{
+background-color: rgb(255, 255, 255);
+    border: 5px solid #FFFFFF;
+}
