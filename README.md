@@ -5,7 +5,6 @@
 * The weather details are retieved using the [Forecast.io](http://forecast.io/) site.
 * The weather details can also be shared on Facebook.
 * The map showing the current location is done using [Open Layers API](http://openlayers.org/).
-* Project can be viewed at [Weather Forecast](http://weatherforecast-env.us-east-1.elasticbeanstalk.com/). 
 
 # Contributor
 
